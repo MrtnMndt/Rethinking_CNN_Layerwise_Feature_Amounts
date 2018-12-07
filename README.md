@@ -1,4 +1,4 @@
-#Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures
+# Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures
 
 In this repository we provide open-source [PyTorch](https://pytorch.org) code for our NeurIPS 2018 CRACT workshop paper, where we characterize the classification accuracy of a family of VGG-like models by shifting a constant amount of total features to different convolutional layers and show how large amounts of features in early layers challenge common design assumptions. If you use or extend the code please cite our work:
 
