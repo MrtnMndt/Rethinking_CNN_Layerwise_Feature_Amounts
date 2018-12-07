@@ -2,7 +2,16 @@
 
 In this repository we provide open-source [PyTorch](https://pytorch.org) code for our NeurIPS 2018 CRACT workshop paper, where we characterize the classification accuracy of a family of VGG-like models by shifting a constant amount of total features to different convolutional layers and show how large amounts of features in early layers challenge common design assumptions. If you use or extend the code please cite our work:
 
+If you use or extend the code please cite our work:
+
 > Martin Mundt, Sagnik Majumder, Tobias Weis, Visvanathan Ramesh, "Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures", International Conference on Neural Information Processing Systems (NeurIPS) 2018, Critiquing and Correcting Trends in Machine Learning (CRACT) Workshop
+
+You can find the complete workshop here: [CRACT](https://ml-critique-correct.github.io) 
+
+and our paper here: [PAPER](https://www.dropbox.com/s/vjt0on2dxizzv8v/CRACT_2018_paper_19.pdf?dl=0)
+
+## Interactive visualization of results
+We provide interactive visualization of results on the repositories github page: [Visualization of results](https://mrtnmndt.github.io/Rethinking_CNN_Layerwise_Feature_Amounts/)
 
 ## Running the code
 Our code can be used with default arguments by simply executing
