@@ -1,50 +1,76 @@
 #Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures
 
-In this repository we provide open-source [PyTorch](https://pytorch.org) code for our NeurIPS 2018 CRACT workshop paper, where we characterize the classification accuracy of a family of VGG-like models by shifting a constant amount of total features to different convolutional layers and show how large amounts of features in early layers challenge common design assumptions. If you use or extend the code please cite our work:
+In this repository we provide open-source [PyTorch](https://pytorch.org) code for our NeurIPS 2018 CRACT workshop paper, where we characterize the classification accuracy of a family of VGG-like models by shifting a constant amount of total features to different convolutional layers and show how large amounts of features in early layers challenge common design assumptions.
+
+If you use or extend the code please cite our work:
 
 > Martin Mundt, Sagnik Majumder, Tobias Weis, Visvanathan Ramesh, "Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures", International Conference on Neural Information Processing Systems (NeurIPS) 2018, Critiquing and Correcting Trends in Machine Learning (CRACT) Workshop
 
-## Running the code
-Our code can be used with default arguments by simply executing
+You can find the complete workshop here: [CRACT](https://ml-critique-correct.github.io) 
 
-`python main.py`
+and our paper here: [PAPER](https://www.dropbox.com/s/vjt0on2dxizzv8v/CRACT_2018_paper_19.pdf?dl=0)
 
-using python 3.5 (although the code should generally work with other python versions as well).
 
-This will launch the CIFAR-10 experiment with approx. 200 architectural variants of the VGG-16 (D) network as specified in the paper. The dataset will be downloaded automatically and a folder per experiment created with a time stamp. All necessary parameters, ranging from datasets to hyper-parameters such as learning rate, mini-batch size as well as architectures, are exposed in the command line parser that can be found in *lib/cmdparser.py*. Note that data pre-processing (global contrast normalization) is off by default and can be added with `--preprocessing True`.
+# Interactive visualization of results
 
-### Datasets
-You can use the other datasets reported in the paper (FashionMNIST; MNIST) by adding them to the execution command. As an example: 
+We provide the results presented in the paper and additional results in interactive form here. You can rotate the plots, click and hover over datapoints to see precise architecture accuracy and parameter counts.
 
-`python main.py --datasets MNIST`
+## CIFAR-10 VGG-D architecture variants
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/10.embed"></iframe>
+</p>  
 
-We tried our best to use a generic data-loading pipeline by implementing classes named according to the datasets in *lib/Datasets/datasets.py*. The main file creates an instance of the dataset and dataloaders in the following lines: 
+### Corresponding training accuracies
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/12.embed"></iframe>
+</p>  
 
-`data_init_method = getattr(datasets, args.dataset)`
-`dataset = data_init_method(torch.cuda.is_available(), args)`
+## Fashion-MNIST VGG-D architecture variants
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/16.embed"></iframe>
+</p>  
 
-If you want to add another dataset, you should be able to do this by adding a class to the datasets file with appropriate dataset name and the dataset an dataloader wrapped in the PyTorch TensorDataset and DataLoaders respectively. 
+### Corresponding training accuracies
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/18.embed"></iframe>
+</p>  
 
-### Different VGG layer amounts 
-We provide a command line argument `vgg-depth` to generate VGG-like models with different amount of layers (this is possible because the 3x3 convolutions with padding = 1 do not change spatial dimensionality and can be stacked arbitrarily). We follow the pattern of the original paper, where e.g. depth = 16 corresponds to VGG-D and depth = 19 corresponds to VGG-E etc. As an example:
+## MNIST VGG-D architecture variants
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/22.embed"></iframe>
+</p>  
 
-`python main.py --vgg-depth 19`
+### Corresponding training accuracies
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/24.embed"></iframe>
+</p>  
 
-In theory you can add your own non-VGG like networks by adding the definition to the *lib/models/architectures.py* file. We provide convolutional and classifier blocks (with BN and batch-norm and multiple layers) for this. An interesting thing to do would be to evaluate whether our findings hold for e.g. residual networks (vgg-like networks with skip connections).
+## Short discussion
+In addition to the results reported in the paper we observe that architectures that are characterized through small xi (large amount of features in early layers) overfit less than the typically used counterparts. 
 
-### Saving results to csv and resuming experiments
-All results are getting saved automatically to a *runs/* directory with a time stamped folder. We save a csv file per architecture but keep appending previous results. This way, if the experiment crashes at some point, the run can be resumed with `resume-model-id`. 
+## Additional results for VGG-A architecture variants
+We observe similar trends for architectures with less layers (based on the VGG-A variant) that were not reported in the paper due to space constraints. 
 
-### Single GPU usage by splitting mini-batches and automatically accumulating gradients
-As many of the model variants have many filters in early layers, we have implemented a GPU memory usage estimate when the model gets build initially. Taking into account the batch size and model configuration, we automatically split the mini-batch into smaller chunks if the currently available GPU memory is exceeded. The gradients are then accumulated until the specified mini-batch size (default: 128) is reached before an optimizer update is done. While our code can be used with multiple GPUs (through use of PyTorch's DataParallel) this allows our code to be run on any single GPU. 
+### CIFAR-10
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/8.embed"></iframe>
+</p>  
 
-We note that this check crashes occasionally and memory still gets exceeded because the theoretically allocated memory and the effective memory used by CUDNN differ. We came up with a rough heuristic for this, but *if anyone using our code has a proper solution to this issue, we will very much appreciate feedback, suggestions or a pull request!*. 
+### Fashion-MNIST
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/14.embed"></iframe>
+</p>  
 
-### Weight initialization and learning rate schedule
-
-As reported in the paper we make use of the *Kaiming-Normal* weight initialization of *Delving Deep into Rectifiers* by [He et. al](https://arxiv.org/abs/1502.01852) and use the learning rate schedule as proposed by [Loshchilov and Hutter](https://arxiv.org/abs/1608.03983) in *Stochastic Gradient Descent with Warm Restarts*.
-Both are implemented in a `LearningRateScheduler` and `WeightInit` class. For the latter we have included options for other initialization methods that can be used. 
-
-## Interactive plots and additional results
-
-We are currently preparing a Github page and a jupyter notebook including interactive visualization to navigate and explore our 3-D plots more easily. We will update this shortly. 
+### MNIST
+</p>
+<p align="center">
+<iframe width="700" height="533" frameborder="0" scrolling="no" src="//plot.ly/~martinmundt/20.embed"></iframe>
+</p>  
