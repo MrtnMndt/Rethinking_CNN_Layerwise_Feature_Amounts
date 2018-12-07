@@ -11,7 +11,7 @@ You can find the complete workshop here: [CRACT](https://ml-critique-correct.git
 and our paper here: [PAPER](https://www.dropbox.com/s/vjt0on2dxizzv8v/CRACT_2018_paper_19.pdf?dl=0)
 
 ## Interactive visualization of results
-We provide interactive visualization of results on the repositories github page: [Visualization of results](https://mrtnmndt.github.io/Rethinking_CNN_Layerwise_Feature_Amounts/)
+We provide interactive visualization to explore our results more easily on the repositories github page: [Visualization of results](https://mrtnmndt.github.io/Rethinking_CNN_Layerwise_Feature_Amounts/)
 
 ## Running the code
 Our code can be used with default arguments by simply executing
@@ -54,6 +54,3 @@ We note that this check crashes occasionally and memory still gets exceeded beca
 As reported in the paper we make use of the *Kaiming-Normal* weight initialization of *Delving Deep into Rectifiers* by [He et. al](https://arxiv.org/abs/1502.01852) and use the learning rate schedule as proposed by [Loshchilov and Hutter](https://arxiv.org/abs/1608.03983) in *Stochastic Gradient Descent with Warm Restarts*.
 Both are implemented in a `LearningRateScheduler` and `WeightInit` class. For the latter we have included options for other initialization methods that can be used. 
 
-## Interactive plots and additional results
-
-We are currently preparing a Github page and a jupyter notebook including interactive visualization to navigate and explore our 3-D plots more easily. We will update this shortly. 
