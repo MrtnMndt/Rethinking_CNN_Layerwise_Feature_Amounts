@@ -6,12 +6,12 @@ If you use or extend the code please cite our work:
 
 > Martin Mundt, Sagnik Majumder, Tobias Weis, Visvanathan Ramesh, "Rethinking Layer-wise Feature Amounts in Convolutional Neural Network Architectures", International Conference on Neural Information Processing Systems (NeurIPS) 2018, Critiquing and Correcting Trends in Machine Learning (CRACT) Workshop
 
-You can find the complete workshop here: [CRACT](https://ml-critique-correct.github.io) 
+You can find the complete CRACT workshop here: [https://ml-critique-correct.github.io](https://ml-critique-correct.github.io) 
 
-and our paper here: [PAPER](https://www.dropbox.com/s/vjt0on2dxizzv8v/CRACT_2018_paper_19.pdf?dl=0)
+and our paper here: [https://arxiv.org/abs/1812.05836](https://arxiv.org/abs/1812.05836) or through the above website. 
 
 ## Interactive visualization of results
-We provide interactive visualization to explore our results more easily on the repositories github page: [Visualization of results](https://mrtnmndt.github.io/Rethinking_CNN_Layerwise_Feature_Amounts/)
+We provide interactive visualization to explore our results more easily on the repositories github page: [https://mrtnmndt.github.io/Rethinking\_CNN\_Layerwise\_Feature\_Amounts/](https://mrtnmndt.github.io/Rethinking_CNN_Layerwise_Feature_Amounts/)
 
 ## Running the code
 Our code can be used with default arguments by simply executing
