@@ -2,6 +2,6 @@
 *.DS_Store
 *.pyc
 *__pycache__
-*datasets
+/datasets*
 *runs
 
