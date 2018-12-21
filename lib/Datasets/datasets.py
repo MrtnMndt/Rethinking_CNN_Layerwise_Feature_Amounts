@@ -1,7 +1,14 @@
+import os
+import struct
+import gzip
+import errno
+
+import numpy as np
 import torch
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch.utils.data import Dataset
 import math
 
 
@@ -40,6 +47,7 @@ class IMAGENET:
     def __init__(self, is_gpu, args):
         self.valdir = args.val_data
         self.traindir = args.train_data
+        self.num_classes = 1000
 
         if args.normalize_data:
             self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -136,6 +144,8 @@ class CIFAR10:
     """
 
     def __init__(self, is_gpu, args):
+
+        self.num_classes = 10
 
         if args.normalize_data:
             self.normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
@@ -234,6 +244,8 @@ class CIFAR100:
     """
 
     def __init__(self, is_gpu, args):
+
+        self.num_classes = 100
 
         if args.normalize_data:
             self.normalize = transforms.Normalize(mean=[0.5071, 0.4866, 0.4409],
@@ -335,6 +347,9 @@ class MNIST:
     """
 
     def __init__(self, is_gpu, args):
+
+        self.num_classes = 10
+
         if args.normalize_data:
             self.normalize = transforms.Normalize(mean=[0.1307], std=[0.3081])
         else:
@@ -450,6 +465,9 @@ class FashionMNIST:
     """
 
     def __init__(self, is_gpu, args):
+
+        self.num_classes = 10
+
         if args.normalize_data:
             self.normalize = transforms.Normalize(mean=[0.1307], std=[0.3081])
         else:
@@ -494,6 +512,179 @@ class FashionMNIST:
                                          target_transform=None, download=True)
         valset = datasets.FashionMNIST('datasets/FashionMNIST/test/', train=False, transform=self.val_transforms,
                                        target_transform=None, download=True)
+
+        return trainset, valset
+
+    def get_dataset_loader(self, batch_size, workers, is_gpu):
+        """
+        Defines the dataset loader for wrapped dataset
+
+        Parameters:
+            batch_size (int): Defines the batch size in data loader
+            workers (int): Number of parallel threads to be used by data loader
+            is_gpu (bool): True if CUDA is enabled so pin_memory is set to True
+
+        Returns:
+             torch.utils.data.TensorDataset: trainset, valset
+        """
+
+        train_loader = torch.utils.data.DataLoader(
+            self.trainset,
+            batch_size=batch_size, shuffle=True,
+            num_workers=workers, pin_memory=is_gpu, sampler=None)
+
+        val_loader = torch.utils.data.DataLoader(
+            self.valset,
+            batch_size=batch_size, shuffle=False,
+            num_workers=workers, pin_memory=is_gpu)
+
+        return train_loader, val_loader
+
+
+class KMNIST(Dataset):
+    """
+    KuzushijiMNIST dataset featuring gray-scale 28x28 images of
+    ten selected Japanese Hiragana from old literature manuscripts.
+
+    https://github.com/rois-codh/kmnist
+    Deep Learning for Classical Japanese Literature. Tarin Clanuwat et al. arXiv:1812.01718
+
+    Parameters:
+        args (dict): Dictionary of (command line) arguments.
+            Needs to contain batch_size (int) and workers(int).
+        is_gpu (bool): True if CUDA is enabled.
+            Sets value of pin_memory in DataLoader.
+
+    Attributes:
+        trainset (torch.utils.data.TensorDataset): Training set wrapper.
+        valset (torch.utils.data.TensorDataset): Validation set wrapper.
+        train_loader (torch.utils.data.DataLoader): Training set loader with shuffling.
+        val_loader (torch.utils.data.DataLoader): Validation set loader.
+    """
+
+    def __init__(self, is_gpu, args):
+        self.num_classes = 10
+        self.__path = os.path.expanduser('datasets/KuzushijiMNIST')
+        self.__download()
+
+        self.trainset, self.valset = self.get_dataset(args.patch_size, args.normalize_data)
+        self.train_loader, self.val_loader = self.get_dataset_loader(args.batch_size, args.workers, is_gpu)
+
+    def __check_exists(self):
+        """
+        Check if dataset has already been downloaded
+
+        Returns:
+             bool: True if downloaded dataset has been found
+        """
+
+        return os.path.exists(os.path.join(self.__path, 'train-images-idx3-ubyte.gz')) and \
+               os.path.exists(os.path.join(self.__path, 'train-labels-idx1-ubyte.gz')) and \
+               os.path.exists(os.path.join(self.__path, 't10k-images-idx3-ubyte.gz')) and \
+               os.path.exists(os.path.join(self.__path, 't10k-labels-idx1-ubyte.gz'))
+
+    def __download(self):
+        """
+        Downloads the KMNIST dataset from the web if dataset
+        hasn't already been downloaded.
+        """
+        from six.moves import urllib
+
+        if self.__check_exists():
+            return
+
+        print("Downloading KMNIST dataset")
+
+        urls = [
+            'http://codh.rois.ac.jp/kmnist/dataset/kmnist/train-images-idx3-ubyte.gz',
+            'http://codh.rois.ac.jp/kmnist/dataset/kmnist/train-labels-idx1-ubyte.gz',
+            'http://codh.rois.ac.jp/kmnist/dataset/kmnist/t10k-images-idx3-ubyte.gz',
+            'http://codh.rois.ac.jp/kmnist/dataset/kmnist/t10k-labels-idx1-ubyte.gz',
+        ]
+
+        # download files
+        try:
+            os.makedirs(self.__path)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+
+        for url in urls:
+            print('Downloading ' + url)
+            data = urllib.request.urlopen(url)
+            filename = url.rpartition('/')[2]
+            file_path = os.path.join(self.__path, filename)
+            with open(file_path, 'wb') as f:
+                f.write(data.read())
+
+        print('Done!')
+
+    def __get_kmnist(self, path, kind='train'):
+        """
+        Load Kuzushiji-MNIST data
+
+        Parameters:
+            path (str): Base directory path containing .gz files for
+                the Kuzushiji-MNIST dataset
+            kind (str): Accepted types are 'train' and 't10k' for
+                training and validation set stored in .gz files
+
+        Returns:
+            numpy.array: images, labels
+
+        """
+        labels_path = os.path.join(path,
+                                   '%s-labels-idx1-ubyte.gz'
+                                   % kind)
+        images_path = os.path.join(path,
+                                   '%s-images-idx3-ubyte.gz'
+                                   % kind)
+
+        with gzip.open(labels_path, 'rb') as lbpath:
+            struct.unpack('>II', lbpath.read(8))
+            labels = np.frombuffer(lbpath.read(), dtype=np.uint8)
+
+        with gzip.open(images_path, 'rb') as imgpath:
+            struct.unpack(">IIII", imgpath.read(16))
+            images = np.frombuffer(imgpath.read(), dtype=np.uint8).reshape(len(labels), 784)
+
+        return images, labels
+
+    def get_dataset(self, patch_size, normalize):
+        """
+        Loads and wraps training and validation datasets
+
+        Returns:
+             torch.utils.data.TensorDataset: trainset, valset
+        """
+        x_train, y_train = self.__get_kmnist(self.__path, kind='train')
+        x_val, y_val = self.__get_kmnist(self.__path, kind='t10k')
+
+        # convert to torch tensors in range [0, 1]
+        x_train = torch.from_numpy(x_train).float() / 255
+        y_train = torch.from_numpy(y_train).long()
+        x_val = torch.from_numpy(x_val).float() / 255
+        y_val = torch.from_numpy(y_val).long()
+
+        # resize flattened array of images for input to a CNN
+        x_train.resize_(x_train.size(0), 1, 28, 28)
+        x_val.resize_(x_val.size(0), 1, 28, 28)
+
+        if normalize:
+            mean = 0.190362019974657
+            std = 0.3474631837640068
+            x_train = (x_train - mean) / std
+            x_val = (x_val - mean) / std
+
+        # up and downsampling
+        x_train = torch.nn.functional.interpolate(x_train, size=patch_size, mode='bilinear')
+        x_val = torch.nn.functional.interpolate(x_val, size=patch_size, mode='bilinear')
+
+        # TensorDataset wrapper
+        trainset = torch.utils.data.TensorDataset(x_train, y_train)
+        valset = torch.utils.data.TensorDataset(x_val, y_val)
 
         return trainset, valset
 
